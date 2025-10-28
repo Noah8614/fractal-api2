@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Dashboard</title>
+    <style>
+        /* Modern CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Beautiful Gradient Background */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Content Sections */
+        .content {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: "•";
+            color: #667eea;
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Button Styles */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Fractal Gallery */
+        .fractals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .fractal-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .fractal-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .fractal-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .fractal-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status Messages */
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .status.success {
+            background: #f1f8e9;
+            border-left: 4px solid #4CAF50;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .status.info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            color: #1565c0;
+        }
+
+        /* Color Options */
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            padding: 8px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin: 0 auto 5px;
+        }
+
+        .fractal-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .fractal-preview .color-box {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .new-fractal-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .new-fractal-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+
+        .new-fractal-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="logout-btn">← Back to Login</a>
+            <h1>Fractal Dashboard</h1>
+            <p>Welcome back, <strong id="username">user</strong>! Create and manage your beautiful fractals.</p>
+        </div>
+
+        <div class="content">
+            <!-- Generate Fractal Section -->
+            <div class="section">
+                <h2>Create New Fractal</h2>
+
+                <!-- Newly generated fractal will appear here -->
+                <div id="newFractalContainer" style="display: none;"></div>
+
+                <form id="fractalForm">
+                    <div class="form-group">
+                        <label for="fractal_type">Fractal Type:</label>
+                        <select id="fractal_type" name="fractal_type" required>
+                            <option value="tree">Recursive Tree</option>
+                            <option value="snowflake">Koch Snowflake</option>
+                            <option value="sierpinski">Sierpinski Triangle</option>
+                            <option value="dragon">Dragon Curve</option>
+                            <option value="fern">Barnsley Fern</option>
+                            <option value="circles">Circle Packing</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="depth">Complexity Depth (1-8):</label>
+                        <input type="number" id="depth" name="depth" min="1" max="8" value="5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Color Scheme:</label>
+                        <input type="text" id="color" name="color" value="blue" required readonly style="background: #f5f5f5;">
+                        <div class="color-options">
+                            <div class="color-option selected" data-color="blue" onclick="selectColor('blue')">
+                                <div class="color-preview" style="background: #667eea;"></div>
+                                <span>Blue</span>
+                            </div>
+                            <div class="color-option" data-color="red" onclick="selectColor('red')">
+                                <div class="color-preview" style="background: #f44336;"></div>
+                                <span>Red</span>
+                            </div>
+                            <div class="color-option" data-color="green" onclick="selectColor('green')">
+                                <div class="color-preview" style="background: #4CAF50;"></div>
+                                <span>Green</span>
+                            </div>
+                            <div class="color-option" data-color="purple" onclick="selectColor('purple')">
+                                <div class="color-preview" style="background: #9c27b0;"></div>
+                                <span>Purple</span>
+                            </div>
+                            <div class="color-option" data-color="orange" onclick="selectColor('orange')">
+                                <div class="color-preview" style="background: #ff9800;"></div>
+                                <span>Orange</span>
+                            </div>
+                            <div class="color-option" data-color="darkblue" onclick="selectColor('darkblue')">
+                                <div class="color-preview" style="background: #303f9f;"></div>
+                                <span>Navy</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fractal Preview -->
+                    <div class="fractal-preview">
+                        <h4>Preview</h4>
+                        <div id="fractalPreview" class="color-box" style="background: #667eea;">
+                            🌳 Depth: 5
+                        </div>
+                        <small>Fractal will be generated with selected parameters</small>
+                    </div>
+
+                    <button type="submit" class="btn" id="generateBtn">
+                        Generate Fractal
+                    </button>
+                </form>
+                <div id="generateStatus"></div>
+            </div>
+
+            <!-- Fractals Gallery Section -->
+            <div class="section">
+                <h2>Your Fractal Collection</h2>
+
+                <div class="fractals-grid" id="fractalsGrid">
+                    <div class="empty-state">
+                        <div>🎨</div>
+                        <p>Generated fractals will appear here after creation</p>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="loadFractals()" id="refreshBtn">
+                    Refresh Collection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("jwt");
+        
+        // Store recently generated fractals in memory for display
+        let recentFractals = [];
+        
+        // Set username from backend injection
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameElement = document.getElementById('username');
+            const username = '{{username}}'; // This will be replaced by backend template
+            usernameElement.textContent = username;
+
+            loadFractals();
+            selectColor('blue');
+            updatePreview();
+            
+            // Add event listeners for form changes
+            document.getElementById('depth').addEventListener('input', updatePreview);
+            document.getElementById('fractal_type').addEventListener('change', updatePreview);
+        });
+
+        function selectColor(color) {
+            document.getElementById('color').value = color;
+            // Update visual selection
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.color === color);
+            });
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const depth = document.getElementById('depth').value;
+            const color = document.getElementById('color').value;
+            const fractalType = document.getElementById('fractal_type').value;
+            const preview = document.getElementById('fractalPreview');
+            
+            const colorMap = {
+                'blue': '#667eea',
+                'red': '#f44336', 
+                'green': '#4CAF50',
+                'purple': '#9c27b0',
+                'orange': '#ff9800',
+                'darkblue': '#303f9f'
+            };
+            
+            const typeIcons = {
+                'tree': '🌳',
+                'snowflake': '❄️',
+                'sierpinski': '🔺', 
+                'dragon': '🐉',
+                'fern': '🌿',
+                'circles': '⭕'
+            };
+            
+            preview.style.background = colorMap[color] || '#667eea';
+            preview.innerHTML = `${typeIcons[fractalType] || '🎨'} Depth: ${depth}`;
+        }
+
+        function displayNewFractal(fractalData) {
+    const container = document.getElementById('newFractalContainer');
+    
+    if (fractalData.image_url || fractalData.image_data) {
+        const imageSrc = fractalData.image_url || fractalData.image_data;
+        container.innerHTML = `
+            <div class="new-fractal-container">
+                <div class="new-fractal-title">🎉 Newly Generated Fractal - ${fractalData.fractal_type || 'Fractal'}</div>
+                <img src="${imageSrc}" alt="Generated Fractal" class="new-fractal-image">
+                <div class="fractal-info">
+                    <strong>Type:</strong> ${fractalData.fractal_type || 'Unknown'}<br>
+                    <strong>Depth:</strong> ${fractalData.depth}<br>
+                    <strong>Color:</strong> ${fractalData.color}<br>
+                    <strong>Storage:</strong> ${fractalData.saved_to_cloud ? 'Cloud (S3 Pre-signed URL)' : 'Local Base64'}<br>
+                    <small>Generated at: ${new Date().toLocaleTimeString()}</small>
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+        
+        // Also add to recent fractals array for the gallery
+        recentFractals.unshift({
+            ...fractalData,
+            ImageURL: imageSrc,
+            FractalId: fractalData.id,
+            Depth: fractalData.depth,
+            Color: fractalData.color,
+            FractalType: fractalData.fractal_type
+        });
+        
+        // Update the gallery display
+        displayFractals(recentFractals);
+    }
+}
+        async function loadFractals() {
+    const grid = document.getElementById('fractalsGrid');
+    const btn = document.getElementById('refreshBtn');
+    
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch("/fractals/list", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            throw new Error(`Server returned ${resp.status}: ${errorText}`);
+        }
+        
+        const data = await resp.json();
+        console.log("Loaded fractals:", data);
+        displayFractals(data);
+        
+    } catch (error) {
+        console.error("Error loading fractals:", error);
+        grid.innerHTML = `
+            <div class="empty-state">
+                <div>❌</div>
+                <p>Error loading fractals</p>
+                <small>${error.message}</small>
+            </div>
+        `;
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+        function displayFractals(fractals) {
+            const grid = document.getElementById('fractalsGrid');
+            grid.innerHTML = '';
+
+            if (!fractals || fractals.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div>🎨</div>
+                        <p>No fractals yet. Generate your first one!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            fractals.forEach((item, index) => {
+                const fractalCard = `
+                    <div class="fractal-card">
+                        <img src="${item.ImageURL}" 
+                             alt="Fractal ${item.FractalId}" 
+                             class="fractal-img">
+                        <div class="fractal-info">
+                            <strong>Type:</strong> ${item.FractalType || 'Unknown'}<br>
+                            <strong>Depth:</strong> ${item.Depth}<br>
+                            <strong>Color:</strong> ${item.Color}<br>
+                            <small>Cloud Storage</small>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += fractalCard;
+            });
+        }
+
+        document.getElementById('fractalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('generateBtn');
+    const status = document.getElementById('generateStatus');
+    
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    status.innerHTML = '';
+    status.style.display = 'block';
+    status.style.opacity = '1';
+
+    const formData = new FormData(e.target);
+    
+    try {
+        const resp = await fetch("/fractals/generate", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            body: formData
+        });
+        
+        if (!resp.ok) {
+            let errorMessage = `Server error: ${resp.status}`;
+            try {
+                const errorData = await resp.json();
+                errorMessage = errorData.detail || JSON.stringify(errorData);
+            } catch (parseError) {
+                const errorText = await resp.text();
+                errorMessage = errorText || resp.statusText || `HTTP ${resp.status}`;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const result = await resp.json();
+        
+        status.innerHTML = `
+            <div class="status success">
+                ✅ <strong>${result.message}</strong><br>
+                <small>Fractal generated successfully!</small>
+            </div>
+        `;
+        
+        console.log("Fractal generated:", result);
+        loadFractals(); // Refresh the list
+        
+    } catch (error) {
+        console.error("Error generating fractal:", error);
+        status.innerHTML = `
+            <div class="status error">
+                ❌ <strong>Error generating fractal</strong><br>
+                <small>${error.message}</small>
+            </div>
+        `;
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        
+        setTimeout(() => {
+            status.style.opacity = '0';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 300);
+        }, 5000);
+    }
+});
+
+        // Auto-refresh the fractal list every 30 seconds
+        setInterval(loadFractals, 30000);
+    </script>
+</body>
+</html>

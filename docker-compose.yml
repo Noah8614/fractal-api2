@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - AWS_DEFAULT_REGION=ap-southeast-2
+    depends_on:
+      - fractal-service
+
+  fractal-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.fractal
+    ports:
+      - "8001:8001"
+    environment:
+      - AWS_DEFAULT_REGION=ap-southeast-2
+    deploy:
+      replicas: 1
